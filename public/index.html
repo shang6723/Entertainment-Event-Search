@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>HW8</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+        <!-- CSS -->
+        <link rel="stylesheet" type="text/css" href="/css/main.css">
+        <link rel="stylesheet" type="text/css" href="https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.10/angular-material.css">
+        <!-- <link rel="stylesheet" type="text/css" href="https://material.angularjs.org/1.1.10/docs.css"> -->
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <!-- Google Font -->
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    </head>
+    <body ng-app="MyApp">
+        <div ng-controller="InputController" class="mx-auto col-md-8 col-sm-10 col-xs-12 col-11" ng-switch="view">
+            <form name="myform" id="myform" class="form-style" autocomplete="off">
+                <div>
+                    <h4 class="form-title">Entertainment Event Ticket Search</h4>
+                    <div class="form-group row required">
+                        <label for="keyword" class="col-sm-3 col-form-label">Keyword</label>
+                        <div class="col-sm-8">
+                            <!-- <input ng-model="keyword" class="form-control" type="text" name="keyword" id="keyword" placeholder="Enter Artist, Team or Event Name (eg. Lakers)" required /> -->
+                            <div ng-controller="DemoCtrl as ctrl" layout="column" ng-cloak class="autocompletedemoBasicUsage">
+                                <form ng-submit="$event.preventDefault()">
+                                    <md-autocomplete md-input-name="form_keyword" ng-model="form.keyword" md-no-cache="ctrl.noCache" 
+                                            md-selected-item="ctrl.selectedItem" md-search-text-change="ctrl.searchTextChange(ctrl.searchText)" 
+                                            md-search-text="ctrl.searchText" md-selected-item-change="ctrl.selectedItemChange(item)" md-items="item in ctrl.querySearch(ctrl.searchText)" 
+                                            md-item-text="item.display" md-min-length="0" placeholder="Enter Artist, Team or Event Name (eg. Lakers)" 
+                                            md-clear-button="false" md-input-class="autocomplete" required>
+                                        <md-item-template>
+                                            <span md-highlight-text="ctrl.searchText" md-highlight-flags="^i">{{item.display}}</span>
+                                        </md-item-template>
+                                    </md-autocomplete>
+                                </form>
+                            </div>
+                            <span class="warning" ng-cloak ng-show="myform.form_keyword.$touched && myform.form_keyword.$invalid">Please enter a keyword.</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="category" class="col-sm-3 col-form-label">Category</label>
+                        <div class="col-sm-3">
+                            <select class="form-control" ng-model="form.category"
+                                ng-options="option.name for option in category">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="distance" class="col-sm-3 col-form-label">Distance</label>
+                        <div class="col-sm-3">
+                            <input class="form-control" type="text" ng-model="form.distance" name="distance" id="distance" placeholder="10"/>
+                        </div>
+                        <div class="col-sm-3">
+                            <select class="form-control" ng-model="form.dis_unit"
+                                ng-options="option.name for option in unit">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row required">
+                        <label for="from_where" class="col-sm-3 col-form-label">From</label>
+                        <div class="col-sm-8">
+                            <input type="radio" ng-model="form.where" name="from_where" id="btn_here" value="loc_curr" ng-change="location_other()"/> Current location<br/>
+                            <input type="radio" ng-model="form.where" name="from_where" id="btn_location" value="loc_other" ng-change="location_other()"/> Other. Please specify:
+                            <div class="ml-3">
+                                <input class="form-control" type="text" ng-model="form.location" name="text_location" 
+                                    id="text_location" ng-disabled="form.where === 'loc_curr'" ng-class="{'warning-border': form.where == 'loc_other'}" required/>
+                                <span class="warning" ng-cloak ng-show="myform.text_location.$touched && myform.text_location.$invalid && form.where != 'loc_curr'">Please enter a location.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" ng-click="submit(form)" name="btn_submit" id="btn_submit"  
+                        class="btn btn-primary" ng-disabled="myform.lat.$invalid || myform.lon.$invalid || myform.form_keyword.$invalid || (form.where == 'loc_other' && myform.text_location.$invalid)">
+                        <i class="material-icons">search</i> Search
+                    </button>
+                    <button type="button" ng-click="reset(myform)"name="btn_clear" id="btn_clear" class="btn ml-2 button-clear"><i class="material-icons">clear_all</i> Clear</button>
+
+                    <input type="hidden" ng-model="form.lat" name="lat" id="lat" required/>
+                    <input type="hidden" ng-model="form.lon" name="lon" id="lon" required/>
+                    <!-- <input type="hidden" ng-model="form.event_id" name="event_id" id="event_id"/> -->
+                </div>
+            </form>
+            <br/>
+            <div class="mb-3 text-center">
+                <button id="btn_result" class="btn btn-primary" type="button" ng-click="btn_result_click()">Results</button>
+                <button id="btn_favorite" class="btn btn-link" type="button" ng-click="btn_favorite_click()">Favorites</button>
+            </div>
+
+            <div class="progress" id="spinner" style="display: none; margin-top: 10em;">
+                <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 50%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="alert alert-danger mt-5" role="alert" ng-cloak ng-switch-when="error_search">Failed to get search results.</div>
+            <div class="alert alert-warning mt-5" role="alert" ng-cloak ng-switch-when="none">No records.</div>
+            <div name="page_search" ng-show="search_result" ng-cloak ng-class="{'animate-show-rightslide' : animate_rightslide_search}"  ng-switch-when="search">
+                <div class="parent-float mar">
+                    <div class="float-right">
+                        <button type="button" class="btn border-gray btn-event-size" ng-disabled="detail_result_searchpage == ''"
+                            ng-click="btn_detail_click()">
+                            <i class="material-icons">keyboard_arrow_right</i>Detail
+                        </button>
+                    </div>
+                </div>
+                <p>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</p>
+                <table class="table mt-2">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Event</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Venue Info</th>
+                            <th scope="col">Favorite</th>
+                        </tr>
+                    </thead>
+                    <tbody hightligh>
+                        <tr class="search-instance" ng-repeat="data in search_result" id="event_{{data.id}}">
+                            <th>{{$index+1}}</th>
+                            <td>{{data.date}}</td>
+                            <td>
+                                <a href="" ng-click="clickEvent(data, 'search')">{{data.event_show}}</a>
+                                <md-tooltip ng-cloak ng-show="data.event != data.event_show">{{data.event}}</md-tooltip>
+                            </td>
+                            <td>{{data.category}}</td>
+                            <td>{{data.venue}}</td>
+                            <td>
+                                <button type="button" class="btn border-gray btn-event-size" ng-cloak
+                                    ng-click="addfavorite(data)" ng-show="!local_fav_id.includes(data.id)">
+                                    <i class="material-icons">star_border</i>
+                                </button>
+                                <button type="button" class="btn border-gray btn-event-size" ng-cloak
+                                    ng-click="removefavorite(data)" ng-show="local_fav_id.includes(data.id)">
+                                    <i class="material-icons" style="color:#FDD444;">star</i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div name="page_favorite" ng-cloak ng-class="{'animate-show-rightslide' : animate_rightslide_favorite}" ng-switch-when="favorite">
+                <div class="alert alert-warning" role="alert" ng-show="local_fav.length == 0">No records.</div>
+                <div ng-show="local_fav.length != 0" style="overflow-x: scroll;">
+                    <div class="parent-float my-2">
+                        <div class="float-right">
+                            <button type="button" class="btn border-gray btn-event-size" ng-disabled="detail_result_favoritepage == ''"
+                                ng-click="btn_detail_click()">
+                                <i class="material-icons">keyboard_arrow_right</i>Detail
+                            </button>
+                        </div>
+                    </div>
+                    <p>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</p>
+                    <table class="table mt-2">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Event</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Venue Info</th>
+                                <th scope="col">Favorite</th>
+                            </tr>
+                        </thead>
+                        <tbody hightligh>
+                            <tr ng-repeat="data in local_fav" id="event_favorite{{data.id}}">
+                                <th>{{$index+1}}</th>
+                                <td>{{data.date}}</td>
+                                <td>
+                                    <a href="" ng-click="clickEvent(data, 'favorite')">{{data.event_show}}</a>
+                                    <md-tooltip ng-show="data.event != data.event_show">{{data.event}}</md-tooltip>
+                                </td>
+                                <td>{{data.category}}</td>
+                                <td>{{data.venue}}</td>
+                                <td>
+                                    <button type="button" class="btn border-gray btn-event-size" 
+                                        ng-click="addfavorite(data)" ng-show="!local_fav_id.includes(data.id)">
+                                        <i class="material-icons">star_border</i>
+                                    </button>
+                                    <button type="button" class="btn border-gray btn-event-size" ng-click="removefavorite(data)">
+                                        <i class="material-icons">delete</i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div name="page_detail" ng-cloak class="animate-show-leftslide" ng-switch-when="detail">
+                <h2 class="form-title font-weight-bold my-3">{{detail_result.name}}</h2>
+                <div class="parent-float my-2">
+                    <div class="float-left">
+                        <button type="button" class="btn border-gray btn-event-size" ng-click="btn_list_click(detail_result.id)">
+                            <i class="material-icons">keyboard_arrow_left</i>List
+                        </button>
+                    </div>
+                    <div class="float-right">
+                        <a href="https://twitter.com/intent/tweet?text={{detail_result.tweet}}">
+                            <img class="btn-event-size" src="http://csci571.com/hw/hw8/Images/Twitter.png"/>
+                        </a>
+                        <button type="button" class="btn border-gray btn-event-size" ng-cloak
+                            ng-click="addfavorite(detail_result.search_res)" ng-show="!local_fav_id.includes(detail_result.id)">
+                            <i class="material-icons">star_border</i>
+                        </button>
+                        <button type="button" class="btn border-gray btn-event-size" ng-cloak
+                            ng-click="removefavorite(detail_result.search_res)" ng-show="local_fav_id.includes(detail_result.id)">
+                            <i class="material-icons" style="color:#FDD444;">star</i>
+                        </button>
+                    </div>
+                </div>
+                <p>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</p>
+                <div>
+                    <ul class="nav nav-tabs justify-content-end" id="event_detail_tab">
+                        <li class="nav-item">
+                            <a class="nav-link active" role="tab" data-toggle="tab" href="#tab_event">Event</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-none d-md-block" role="tab" data-toggle="tab" href="#tab_team">Artist/Team</a>
+                            <a class="nav-link d-md-none" role="tab" data-toggle="tab" href="#tab_team">Artist</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#tab_venue">Venue</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-none d-md-block" role="tab" data-toggle="tab" href="#tab_upcomingevent">Upcoming Events</a>
+                            <a class="nav-link d-md-none" role="tab" data-toggle="tab" href="#tab_upcomingevent">Upcoming</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="progress" id="spinner1" style="display: none; margin-top: 10em;">
+                    <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 50%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active mt-3" id="tab_event" role="tabpanel" aria-labelledby="home-tab">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr ng-repeat="data in detail_result.event">
+                                    <th>{{ data.title }}</th>
+                                    <td>
+                                        <span ng-if="data.title != 'Buy Ticket At' && data.title != 'Seat Map'">{{ data.value }}</span>
+                                        <a ng-if="data.title == 'Buy Ticket At'" target="_blank" href={{data.value}}>Ticketmaster</a>
+                                        <div ng-if="data.title == 'Seat Map'">
+                                            <a href="" data-toggle="modal" data-target="#exampleModal">View Seat Map Here</a>
+                                            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="exampleModalLabel">View Seat Map</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <a href="{{data.value}}" target="_blank"><img class="seat-map" src="{{data.value}}"/></a>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                                                    </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade mt-3" id="tab_team" role="tabpanel" aria-labelledby="profile-tab">
+                            <div class="alert alert-warning mt-5" role="alert" ng-show="team_result == undefined || team_result.length == 0 || team_result[0].empty">No records.</div>
+                        <div ng-repeat= "data in team_result">
+                            <h4 class="form-title font-weight-bold my-3" ng-show="(data.spotify && data.spotify.name) || (data.google.photo && data.google.photo.length > 0)">{{data.name}}</h4>
+                            <table class="table table-striped" ng-show="data.spotify && data.spotify.name">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" width="40%">Name</th>
+                                        <td width="60%">{{data.spotify.name}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" width="40%">Followers</th>
+                                        <td width="60%">{{data.spotify.follower}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" width="40%">Popularity</th>
+                                        <td width="60%" class="round-process-bar-container">
+                                            <round-progress max="100" current=data.spotify.popularity color="#7EAB2E" radius="25" stroke="5" 
+                                                rounded="true"clockwise="false" responsive="false" duration="800">
+                                            </round-progress>
+                                            <span class="round-process-bar">{{data.spotify.popularity}}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" width="40%">Check At</th>
+                                        <td width="60%"><a target="_blank" href={{data.spotify.url}}>Spotify</a></td>
+                                    </tr>
+                                </tbody>
+                            </table> 
+                            <div>
+                                <span ng-repeat= "photo in data.google.photo">
+                                    <a href="{{photo}}" target="_blank"><img src="{{photo}}" class="team-photo my-2"/></a>
+                                </span>
+                            </div> 
+                        </div>  
+                        
+                    </div>
+                    <div class="tab-pane fade mt-3" id="tab_venue" role="tabpanel" aria-labelledby="contact-tab">
+                        <div class="alert alert-warning mt-5" role="alert" ng-show="venue_result.data == undefined || venue_result.data.length == 0">No records.</div>
+                        <div ng-show="venue_result.data">
+                            <h5 class="form-title">{{venue_result.name}}</h5>
+                            <table class="table table-striped">
+                                <tbody>
+                                    <tr ng-repeat="data in venue_result.data">
+                                        <th scope="row" width="20%">{{data.title}}</th>
+                                        <td width="80%">{{data.value}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>  
+                            <div id="map"></div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade mt-3" id="tab_upcomingevent" role="tabpanel" aria-labelledby="contact-tab">
+                        <div class="alert alert-warning mt-5" role="alert" ng-show="upcoming_result == undefined || upcoming_result.length == 0">No records.</div>
+                        <div ng-show="upcoming_result.length > 0">
+                            <div class="form-row ml-2">
+                                <select class="form-control col-md-3 col-sm-11 col-xs-11 col-11" ng-model="btn.btn_upcoming_category"
+                                    ng-options="option.name for option in upcoming_category" ng-change="btn_upcoming_sort_change()">
+                                </select>
+                                <select class="form-control col-md-3 col-sm-11 col-xs-11 col-11" ng-model="btn.btn_upcoming_order" ng-disabled="btn.btn_upcoming_category.name == 'Default'"
+                                    ng-options="option.name for option in upcoming_order" ng-change="btn_upcoming_sort_change()">
+                                </select>
+                            </div>
+                            <div ng-repeat="data in upcoming_result | limitTo: upcoming_limit " class="card my-2" ng-class="{'animate-show-moreless' : animate_show_moreless}">
+                                <div class="card-body">
+                                    <a class="upcoming-name" href={{data.url}} target="_blank">{{data.name}}</a><br/>
+                                    <label class="mb-0 upcoming-artist">Artist: {{data.artist}} </label>
+                                    <label class="mb-0 upcoming-date">{{data.date}}</label><br/>
+                                    <label class="mb-0 upcoming-type">Type: {{data.type}}</label>
+                                </div>
+                            </div>
+                            <div class="text-center my-5">
+                            <button class="btn btn-primary" ng-cloak ng-show="upcoming_limit != upcoming_result.length && upcoming_result.length > 5" ng-click="upcoming_limit_more()">Show More</button>
+                            <button class="btn btn-primary" ng-cloak ng-show="upcoming_limit == upcoming_result.length && upcoming_result.length != 5" ng-click="upcoming_limit_less()">Show Less</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JS -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular-animate.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular-route.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular-aria.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular-messages.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.js"></script>
+        <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-114/svg-assets-cache.js"></script>
+        <script src="https://cdn.gitcdn.link/cdn/angular/bower-material/v1.1.10/angular-material.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-svg-round-progressbar/0.4.8/roundProgress.min.js"></script>
+        <script src="/js/controller/autocomplete.js"></script>
+        <script src="/js/controller/input.js"></script>
+        <script src="/js/map.js"></script>
+        <script src="/js/directive.js"></script>
+        <script async src="https://platform.twitter.com/widgets.js" type="text/javascript"></script>
+        <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDv2FLoT33RpapdfmXrrh1hGxrI1NclPUI&callback=initMap">
+        </script>
+    </body>
+</html>

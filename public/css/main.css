@@ -1,0 +1,231 @@
+body {
+    background-color: white;
+    min-height: 1200px !important;
+}
+.form-style {
+    border: 2px solid lightgray; 
+    background-color: #f7f7f7; 
+    border-radius: 10px;
+}
+
+.form-style > div {
+    margin: 1em 2em 1em 2em;
+}
+
+.form-title {
+    font-weight: normal; 
+    text-align: center;
+}
+
+.border-gray {
+    border: 1px solid lightgray !important; 
+}
+
+input.ng-invalid.ng-touched.warning-border, md-autocomplete input.ng-invalid.ng-touched {
+  border:1px solid #f00;
+}
+
+
+/* material icon */
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(https://example.com/MaterialIcons-Regular.eot); /* For IE6-8 */
+    src: local('Material Icons'),
+        local('MaterialIcons-Regular'),
+        url(https://example.com/MaterialIcons-Regular.woff2) format('woff2'),
+        url(https://example.com/MaterialIcons-Regular.woff) format('woff'),
+        url(https://example.com/MaterialIcons-Regular.ttf) format('truetype');
+}
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;  /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+    vertical-align: bottom;
+
+    /* Support for all WebKit browsers. */
+    -webkit-font-smoothing: antialiased;
+    /* Support for Safari and Chrome. */
+    text-rendering: optimizeLegibility;
+
+    /* Support for Firefox. */
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Support for IE. */
+    font-feature-settings: 'liga';
+}
+.required .col-form-label:after {
+    content: " *";
+    color: red;
+}
+
+/*  autocomplete */
+md-autocomplete > * {
+    box-shadow: none !important;
+    border: 1px solid lightgray !important; 
+    border-radius: 5px;
+}
+md-autocomplete md-progress-linear { 
+    display: none; 
+}
+
+.warning {
+    color: red;
+}
+
+.button-clear {
+    border: 1px solid lightgray !important;
+}
+
+.btn-event-size {
+    height: 2.3em;
+}
+
+.btn-link {
+    text-decoration: none !important;
+}
+
+.bg-hightlight {
+    background-color: #FADC96;
+}
+
+.search-instance:hover {
+    background-color: lightgray;
+}
+
+.round-process-bar-container {
+    position: relative; 
+}
+
+.round-process-bar {
+    position: absolute; 
+    top:25px; 
+    left:25px
+}
+
+#map {
+    width: 100%;
+    height: 400px;
+    background-color: grey;
+}
+.parent-float {
+    display: flow-root;
+}
+
+.team-photo {
+    border: 1px solid lightgray;
+    padding: 1px;
+    width: 95%;
+}
+
+.upcoming-name, .upcoming-type, .upcoming-artist, .upcoming-date {
+    font-weight: bold;
+}
+
+.upcoming-artist {
+    color: #E76E2F;
+}
+
+.upcoming-date {
+    color: gray;
+}
+
+.animate-show-moreless.ng-enter {
+    -webkit-transition: 0.5s linear all;
+    -moz-transition: 0.5s linear all;
+    -o-transition: 0.5s linear all;
+    transition: 0.5s linear all;
+    max-height: 0;
+    opacity: 0;
+}
+
+.animate-show-moreless.ng-enter-active {
+    max-height: 100px;
+    opacity: 1;
+    left: 0;
+}
+
+.animate-show-moreless.ng-leave {
+    -webkit-transition: 0.5s animation_showless;
+    -moz-transition: 0.5s animation_showless;
+    -o-transition: 0.5s animation_showless;
+    transition: 0.5s animation_showless;
+    animation: 0.5s animation_showless;
+}
+
+.animate-middle.ng-enter {
+    /* display: block; */
+    display: none;
+}
+.animate-middle.ng-enter-active {
+    display: none;
+}
+.animate-show-leftslide, .animate-show-rightslide { 
+    width: inherit;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
+    opacity:1;
+    background:white;
+    position: absolute;
+    left: 0;
+}
+   
+.animate-show-leftslide.ng-enter {
+    left: -100%;
+    opacity:0;
+}
+
+.animate-show-leftslide.ng-leave, .animate-show-rightslide.ng-leave {
+    -webkit-transition: all 0s;
+    -moz-transition: all 0s;
+    -o-transition: all 0s;
+    transition: all 0s;
+}
+.animate-show-rightslide.ng-enter {
+    left: 100%;
+    opacity:0;
+}
+
+@keyframes animation_showless {
+    from {
+      max-height: 100px;
+      opacity: 1;
+    }
+    to {
+      max-height: 0;
+      opacity: 0;
+    } 
+  }
+
+.seat-map {
+    width: 90%;
+}
+
+.mar {
+    margin: 15px 0 15px 0;
+}
+
+@media screen and (min-width: 768px) {
+    .team-photo {
+        width: 32%;
+    }
+
+    .seat-map {
+        width: 30em;
+    }
+}
+
+.table {
+    overflow-x: scroll;
+}
